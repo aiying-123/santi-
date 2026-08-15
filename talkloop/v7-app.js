@@ -4,7 +4,7 @@ let ix=0,lang=st.lang||'en',filter='all',dScene='greeting',dTurn=0,dLang=lang,qx
 const $=x=>document.getElementById(x),app=$('app');app.dataset.mood=st.mood||'good';
 const HEALTH_VIDEO='https://videos.pexels.com/video-files/30141938/12927309_1080_1920_30fps.mp4';
 const JP_ONLY=['https://videos.pexels.com/video-files/12893501/12893501-hd_1080_1920_25fps.mp4','https://videos.pexels.com/video-files/9046233/9046233-hd_1080_1920_25fps.mp4','https://videos.pexels.com/video-files/6602066/6602066-hd_1080_1920_25fps.mp4','https://videos.pexels.com/video-files/8554081/8554081-hd_1080_1920_25fps.mp4'];
-function save(){localStorage.setItem(KEY,JSON.stringify(st))}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
 function key(ts=Date.now()){let d=new Date(ts);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
 function marked(t){return items.filter(x=>st.m[x.id]&&(t==='all'||st.m[x.id]===t))}
 function toast(s){$('toast').textContent=s;$('toast').classList.add('show');clearTimeout(window._toastT);window._toastT=setTimeout(()=>$('toast').classList.remove('show'),1300)}
