@@ -1,10 +1,23 @@
-/* TalkLoop v12 stable, language-separated media orchestration */
+/* TalkLoop v12.1 stable, language-separated and scene-matched media orchestration */
 (function(){
 'use strict';
-const VERSION='12.0.4';
+const VERSION='12.1.0';
 const px={
   social:'https://videos.pexels.com/video-files/8522987/8522987-hd_1080_1920_30fps.mp4',
-  hotel:'https://videos.pexels.com/video-files/7820465/7820465-hd_1920_1080_25fps.mp4'
+  hotel:'https://videos.pexels.com/video-files/7820465/7820465-hd_1920_1080_25fps.mp4',
+  jpOfficeA:'https://videos.pexels.com/video-files/7953565/7953565-hd_1920_1080_30fps.mp4',
+  jpOfficeB:'https://videos.pexels.com/video-files/7643339/7643339-hd_1080_2048_25fps.mp4',
+  jpOfficeC:'https://videos.pexels.com/video-files/7643438/7643438-hd_2048_1080_25fps.mp4',
+  jpOfficeD:'https://videos.pexels.com/video-files/7643454/7643454-hd_2048_1080_25fps.mp4',
+  jpOfficeE:'https://videos.pexels.com/video-files/7643614/7643614-hd_1080_2048_25fps.mp4',
+  jpOfficeF:'https://videos.pexels.com/video-files/7844857/7844857-hd_1920_1080_30fps.mp4',
+  jpHealthA:'https://videos.pexels.com/video-files/30141942/12925612_1920_1080_24fps.mp4',
+  jpHealthB:'https://videos.pexels.com/video-files/8375762/8375762-hd_1080_2048_25fps.mp4',
+  jpHotel:'https://videos.pexels.com/video-files/7820478/7820478-hd_1920_1080_25fps.mp4',
+  jpTransit:'https://videos.pexels.com/video-files/17371342/17371342-hd_1920_1080_30fps.mp4',
+  jpShopA:'https://videos.pexels.com/video-files/9015744/9015744-hd_1080_1920_24fps.mp4',
+  jpShopB:'https://videos.pexels.com/video-files/9015583/9015583-hd_1080_1920_24fps.mp4',
+  jpShopC:'https://videos.pexels.com/video-files/10901926/10901926-hd_1920_1080_30fps.mp4'
 };
 const mx=id=>`https://assets.mixkit.co/videos/${id}/${id}-720.mp4`;
 const MX={
@@ -18,11 +31,35 @@ const MX={
   gym:mx(4506),classTalk:mx(50129)
 };
 
-// 日语与英语候选完全分开。标签描述语言/互动语境，不根据外貌推断人物国籍。
-const JP_INTERACTION=[
-  MX.jpTogether,MX.jpRestaurantA,MX.jpRestaurantB,MX.jpRestaurantC,
+// 日语与英语候选完全分开。日语池按行为场景再分组，避免酒店、支付、
+// 工作等表达仍重复播放同一组咖啡馆画面。标签描述训练语境，不根据外貌推断国籍。
+const JP_SOCIAL=[
+  MX.jpRestaurantA,MX.jpRestaurantB,MX.jpRestaurantC,
+  MX.cafeA,MX.cafeB,MX.cafeC,MX.cafeD,px.jpOfficeA,px.jpOfficeB
+];
+const JP_DINING=[
+  MX.jpRestaurantA,MX.jpRestaurantB,MX.jpRestaurantC,
   MX.cafeA,MX.cafeB,MX.cafeC,MX.cafeD
 ];
+const JP_RETAIL=[px.jpShopA,px.jpShopB,px.jpShopC,MX.cafeA,MX.cafeB,MX.cafeC,MX.cafeD];
+const JP_TRAVEL=[px.jpHotel,px.jpTransit,px.jpOfficeB];
+const JP_WORK=[px.jpOfficeA,px.jpOfficeB,px.jpOfficeC,px.jpOfficeD,px.jpOfficeE,px.jpOfficeF];
+const JP_HEALTH=[px.jpHealthA,px.jpHealthB];
+const JP_BY_FAMILY={
+  greeting:JP_SOCIAL,
+  conversation:JP_SOCIAL,
+  payment:JP_RETAIL,
+  order:JP_DINING,
+  shopping:JP_RETAIL,
+  travel:JP_TRAVEL,
+  phone:[px.jpOfficeA,px.jpOfficeB,px.jpHealthB],
+  work:JP_WORK,
+  health:JP_HEALTH,
+  gym:[px.jpHealthA,px.jpHealthB,px.jpOfficeF],
+  home:JP_SOCIAL,
+  conflict:JP_WORK,
+  social:JP_SOCIAL
+};
 const EN_SOCIAL=[
   MX.coworkers,MX.meeting,MX.partners,MX.walkTalk,MX.podcast,
   MX.groupTalk,MX.coupleChat,MX.handshake,px.social
@@ -31,7 +68,7 @@ const ACTION=[
   {k:'greeting',re:/wave|smile|greet|handshake|eye-contact|meet|laugh|listen|nod/i,en:[MX.handshake,MX.walkTalk,MX.coworkers,px.social]},
   {k:'conversation',re:/opinion|agree|disagree|evidence|example|explain|listen|talk|conversation|question|follow|network/i,en:[MX.coworkers,MX.podcast,MX.partners,MX.broadcasters,MX.walkTalk]},
   {k:'payment',re:/card|cash|visa|terminal|receipt|refund|fee|charge|pay|checkout|bank|transfer|withdraw|deposit/i,en:[MX.phoneDiscuss,MX.coworkers,MX.partners]},
-  {k:'order',re:/coffee|cup|menu|food|drink|milk|water|bag|restaurant|cafe|order|dish|pizza/i,en:[MX.cafeB,MX.coupleChat,MX.groupTalk]},
+  {k:'order',re:/coffee|cup|menu|food|drink|milk|water|bag|restaurant|cafe|order|dish|pizza/i,en:[MX.coupleChat,MX.groupTalk,MX.partners]},
   {k:'shopping',re:/size|color|try|shirt|item|shop|return|exchange|price|gift|package/i,en:[MX.phoneDiscuss,MX.partners,MX.coworkers]},
   {k:'travel',re:/train|station|platform|flight|airport|gate|boarding|luggage|passport|map|direction|hotel|taxi|bus/i,en:[MX.walkTalk,MX.phoneDiscuss,MX.partners,px.hotel]},
   {k:'phone',re:/phone|call|text|message|signal|battery|email|contact|linkedin/i,en:[MX.callMan,MX.phoneDiscuss,MX.callCenter]},
@@ -43,10 +80,49 @@ const ACTION=[
   {k:'social',re:/.*/,en:EN_SOCIAL}
 ];
 
+const SCENE_FAMILY={
+  "greeting":"greeting",
+  "intro":"greeting",
+  "smalltalk":"social",
+  "convenience":"payment",
+  "cafe":"order",
+  "restaurant":"order",
+  "shopping":"shopping",
+  "transport":"travel",
+  "directions":"travel",
+  "hotel":"travel",
+  "health":"health",
+  "work":"work",
+  "message":"phone",
+  "appointment":"work",
+  "friends":"social",
+  "invite":"social",
+  "thanks":"greeting",
+  "repair":"conflict",
+  "service":"conflict",
+  "help":"conflict",
+  "emergency":"health",
+  "airport":"travel",
+  "neighbor":"home",
+  "networking":"work",
+  "gym":"gym",
+  "roommate":"home",
+  "date":"social",
+  "class":"work",
+  "deeper":"conversation",
+  "bank":"payment"
+};
+
 function textOf(item){return [item.action,item.func,item.scene&&item.scene.id,item.scene&&item.scene.zh,item.en,item.jp].filter(Boolean).join(' ')}
-function family(item){const t=textOf(item);for(const a of ACTION){if(a.k!=='social'&&a.re.test(t))return a}return ACTION[ACTION.length-1]}
+function family(item){
+  const sceneFamily=SCENE_FAMILY[item.scene&&item.scene.id];
+  if(sceneFamily)return ACTION.find(a=>a.k===sceneFamily)||ACTION[ACTION.length-1];
+  const t=textOf(item);
+  for(const a of ACTION){if(a.k!=='social'&&a.re.test(t))return a}
+  return ACTION[ACTION.length-1];
+}
 function unique(a){return [...new Set(a.filter(Boolean))]}
-function pool(item,l){return l==='jp'?unique(JP_INTERACTION):unique(family(item).en)}
+function pool(item,l){const f=family(item);return l==='jp'?unique(JP_BY_FAMILY[f.k]||JP_SOCIAL):unique(f.en)}
 
 let dead=new Set();
 try{dead=new Set(JSON.parse(sessionStorage.getItem('talkloop12-dead-media')||'[]'))}catch(_){dead=new Set()}
@@ -57,10 +133,26 @@ window.TALKLOOP_MEDIA_SOURCES={
   version:VERSION,
   providers:['Mixkit','Pexels'],
   actionFamilies:ACTION.map(x=>x.k),
-  japaneseInteractionVideos:JP_INTERACTION.length,
+  mappedScenes:Object.keys(SCENE_FAMILY).length,
+  japaneseSceneFamilies:Object.keys(JP_BY_FAMILY).length,
+  japaneseInteractionVideos:unique(Object.values(JP_BY_FAMILY).flat()).length,
   englishVideos:unique(ACTION.flatMap(x=>x.en)).length
 };
 window.pools=pool;
+
+const recentByLanguage={en:[],jp:[]};
+function rotate(values,seed){
+  if(values.length<2)return values;
+  const n=seed%values.length;
+  return [...values.slice(n),...values.slice(0,n)];
+}
+function orderedCandidates(item,l,previousSrc,seed){
+  const all=livePool(item,l),avoid=new Set([previousSrc,...recentByLanguage[l]].filter(Boolean));
+  return [...rotate(all.filter(src=>!avoid.has(src)),seed),...rotate(all.filter(src=>avoid.has(src)),seed)];
+}
+function rememberSource(l,src){
+  recentByLanguage[l]=[src,...recentByLanguage[l].filter(value=>value!==src)].slice(0,3);
+}
 
 window.prepareNext=function(item,l){
   const p=livePool(item,l);if(p.length<2)return;
@@ -80,6 +172,7 @@ function clearVideo(v){
 window.stopMedia=clearVideo;
 
 window.remix=function(item,v,ph,l=lang,reason='auto',shadeId){
+  const previousSrc=v.currentSrc||v.src||'';
   clearVideo(v);
   const token=v._tlToken,p=livePool(item,l),scene=v.closest('.scene');
   const shade=shadeId?$(shadeId):scene.querySelector('.mediaShade');
@@ -116,9 +209,9 @@ window.remix=function(item,v,ph,l=lang,reason='auto',shadeId){
   };
   const trySource=()=>{
     if(v._tlToken!==token)return;detach();
-    const candidates=livePool(item,l);
+    const candidates=orderedCandidates(item,l,previousSrc,seed);
     if(!candidates.length||attempt>=Math.min(5,candidates.length))return fallback();
-    const src=candidates[(seed+attempt)%candidates.length];attempt++;
+    const src=candidates[attempt%candidates.length];attempt++;
     let revealed=false;
     const fail=()=>{
       if(v._tlToken!==token||revealed)return;
@@ -129,10 +222,12 @@ window.remix=function(item,v,ph,l=lang,reason='auto',shadeId){
       revealed=true;if(v._tlTimer)clearTimeout(v._tlTimer);
       scene.classList.remove('loading');scene.classList.add('video-ready');scene.setAttribute('aria-busy','false');
       scene.dataset.mediaProvider=src.includes('pexels.com')?'pexels':'mixkit';
+      scene.dataset.mediaFamily=family(item).k;
+      scene.dataset.mediaLanguage=l;
       v.style.opacity='1';ph.style.opacity='0';if(shade)shade.style.display='none';
       v.ontimeupdate=()=>{if(v.currentTime>=(v._s||0)+(v._len||4)-.08)advance()};
       v.onended=advance;
-      v.play().catch(()=>{});window.prepareNext(item,l);window.prepareNext(item,l==='en'?'jp':'en');
+      rememberSource(l,src);v.play().catch(()=>{});window.prepareNext(item,l);window.prepareNext(item,l==='en'?'jp':'en');
     };
     const frameReady=()=>{
       if(v._tlToken!==token||revealed)return;
@@ -152,6 +247,6 @@ window.remix=function(item,v,ph,l=lang,reason='auto',shadeId){
 const oldAudit=window.renderAudit;
 window.renderAudit=function(){
   oldAudit&&oldAudit();const n=$('audit'),m=window.TALKLOOP_MEDIA_SOURCES;
-  if(n)n.insertAdjacentHTML('beforeend',`<div class="tip mediaAudit" style="margin-top:10px"><b>视频链路</b><br>${m.providers.length} 个公共素材站 · 英语 ${m.englishVideos} 条候选 · 日语互动 ${m.japaneseInteractionVideos} 条候选。英日候选物理分池；失效地址会在本次会话中隔离，首帧就绪前保留封面，不显示黑屏。</div>`);
+  if(n)n.insertAdjacentHTML('beforeend',`<div class="tip mediaAudit" style="margin-top:10px"><b>视频链路</b><br>${m.providers.length} 个公共素材站 · 英语 ${m.englishVideos} 条候选 · 日语 ${m.japaneseInteractionVideos} 条候选 / ${m.japaneseSceneFamilies} 类场景映射。英日物理分池并连续去重；失效地址会在本次会话中隔离，首帧就绪前保留封面，不显示黑屏。</div>`);
 };
 })();
