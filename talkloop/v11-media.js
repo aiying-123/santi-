@@ -1,14 +1,14 @@
 /* TalkLoop v12 stable, language-separated media orchestration */
 (function(){
 'use strict';
-const VERSION='12.0.1';
+const VERSION='12.0.2';
 const px={
   social:'https://videos.pexels.com/video-files/8522987/8522987-hd_1080_1920_30fps.mp4',
   hotel:'https://videos.pexels.com/video-files/7820465/7820465-hd_1920_1080_25fps.mp4'
 };
 const mx=id=>`https://assets.mixkit.co/videos/${id}/${id}-720.mp4`;
 const MX={
-  jpTogether:mx(48085),jpOffice:mx(48692),jpOfficeCall:mx(44785),jpLaptop:mx(1803),
+  jpTogether:mx(48085),
   jpRestaurantA:mx(51238),jpRestaurantB:mx(51239),jpRestaurantC:mx(51240),
   cafeA:mx(43247),cafeB:mx(43248),cafeC:mx(43249),cafeD:mx(43266),
   coworkers:mx(4872),meeting:mx(4547),meetingEnd:mx(4802),officeWalk:mx(315),
@@ -20,8 +20,7 @@ const MX={
 
 // 日语与英语候选完全分开。标签描述语言/互动语境，不根据外貌推断人物国籍。
 const JP_INTERACTION=[
-  MX.jpTogether,MX.jpOffice,MX.jpOfficeCall,MX.jpLaptop,
-  MX.jpRestaurantA,MX.jpRestaurantB,MX.jpRestaurantC,
+  MX.jpTogether,MX.jpRestaurantA,MX.jpRestaurantB,MX.jpRestaurantC,
   MX.cafeA,MX.cafeB,MX.cafeC,MX.cafeD
 ];
 const EN_SOCIAL=[
