@@ -1,7 +1,7 @@
 /* TalkLoop v12 stable, language-separated media orchestration */
 (function(){
 'use strict';
-const VERSION='12.0.2';
+const VERSION='12.0.3';
 const px={
   social:'https://videos.pexels.com/video-files/8522987/8522987-hd_1080_1920_30fps.mp4',
   hotel:'https://videos.pexels.com/video-files/7820465/7820465-hd_1920_1080_25fps.mp4'
@@ -138,13 +138,7 @@ window.remix=function(item,v,ph,l=lang,reason='auto',shadeId){
       if(v._tlToken!==token||revealed)return;
       const dur=Number.isFinite(v.duration)?v.duration:0;
       const len=Math.max(3,Math.min(7,3+(seed%5),dur||7));
-      const room=Math.max(0,dur-len-.2),start=room?((seed+(item.pi||0)*1.7)%room):0;
-      v._s=start;v._len=len;
-      if(start>.15&&Math.abs(v.currentTime-start)>.3){
-        v.onseeked=reveal;
-        try{v.currentTime=start}catch(_){reveal()}
-        v._tlRevealTimer=setTimeout(reveal,650);
-      }else reveal();
+      v._s=0;v._len=len;reveal();
     };
     v.src=src;v.preload='auto';v.muted=true;v.playsInline=true;v.poster='';
     v.onloadeddata=frameReady;v.oncanplay=frameReady;v.onerror=fail;
