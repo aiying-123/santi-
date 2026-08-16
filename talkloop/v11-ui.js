@@ -34,6 +34,7 @@ const originalRefresh=window.refresh;window.refresh=function(){originalRefresh&&
 const originalRender=window.render;window.render=function(){originalRender&&originalRender();dynamicCounts();const x=ITEMS[ix];const tip=$('tip');if(tip)tip.textContent=lang==='jp'?'日语模式使用独立的女性主导互动素材池；失效地址自动隔离，首帧未就绪时保留封面。':`当前：${x.scene.zh} / ${x.func} / ${x.action}。先听懂意图，立即接一句，再逐步去掉提示。`;};
 const originalAudit=window.renderAudit;window.renderAudit=function(){originalAudit&&originalAudit();systemPrinciple()};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCoverage()});
+app.addEventListener('scroll',()=>{if(app.scrollTop)app.scrollTop=0},{passive:true});
 window.TALKLOOP_DEFER_MEDIA=false;
 ix=pickNextIndex();addMascot();injectModal();systemPrinciple();refresh();render();
 })();

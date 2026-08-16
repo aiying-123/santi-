@@ -1,7 +1,7 @@
 /* TalkLoop v12 stable, language-separated media orchestration */
 (function(){
 'use strict';
-const VERSION='12.0.3';
+const VERSION='12.0.4';
 const px={
   social:'https://videos.pexels.com/video-files/8522987/8522987-hd_1080_1920_30fps.mp4',
   hotel:'https://videos.pexels.com/video-files/7820465/7820465-hd_1920_1080_25fps.mp4'
