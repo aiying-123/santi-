@@ -35,5 +35,5 @@ const originalRender=window.render;window.render=function(){originalRender&&orig
 const originalAudit=window.renderAudit;window.renderAudit=function(){originalAudit&&originalAudit();systemPrinciple()};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCoverage()});
 window.TALKLOOP_DEFER_MEDIA=false;
-addMascot();injectModal();systemPrinciple();refresh();render();
+ix=pickNextIndex();addMascot();injectModal();systemPrinciple();refresh();render();
 })();

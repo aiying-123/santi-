@@ -1,11 +1,11 @@
 const KEY='talkloop9';
 let st=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{m:{},h:[],d:{},mood:'good',lang:'en',vis:{}}}catch(e){return{m:{},h:[],d:{},mood:'good',lang:'en',vis:{}}}})();
 st.m=st.m||{};st.h=Array.isArray(st.h)?st.h:[];st.d=st.d||{};st.vis=st.vis||{};st.mood=st.mood||'good';st.lang=st.lang||'en';
-let ix=0,lang=st.lang||'en',filter='all',dScene='greeting',dTurn=0,dLang=lang,qx=0;
+let ix=0,lang=st.lang||'en',filter='all',dScene='greeting',dTurn=0,dLang=lang,qx=0,trainingStarted=false;
 const $=x=>document.getElementById(x),app=$('app');app.dataset.mood=st.mood||'good';
 const EXTRA={en:{social:['https://assets.mixkit.co/videos/4872/4872-720.mp4','https://videos.pexels.com/video-files/8522987/8522987-hd_1080_1920_30fps.mp4'],retail:['https://assets.mixkit.co/videos/43248/43248-720.mp4'],travel:['https://assets.mixkit.co/videos/32744/32744-720.mp4','https://videos.pexels.com/video-files/7820465/7820465-hd_1920_1080_25fps.mp4'],health:['https://assets.mixkit.co/videos/28286/28286-720.mp4'],work:['https://assets.mixkit.co/videos/4547/4547-720.mp4']},jp:['https://assets.mixkit.co/videos/48085/48085-720.mp4','https://assets.mixkit.co/videos/48692/48692-720.mp4','https://assets.mixkit.co/videos/44785/44785-720.mp4','https://assets.mixkit.co/videos/1803/1803-720.mp4']};
 const warmed=new Map();
-function warm(src){if(!src||warmed.has(src))return;const v=document.createElement('video');v.preload='metadata';v.muted=true;v.playsInline=true;v.src=src;try{v.load()}catch(e){}warmed.set(src,v);if(warmed.size>4){const k=warmed.keys().next().value;const old=warmed.get(k);try{old.pause();old.removeAttribute('src');old.load()}catch(e){}warmed.delete(k)}}
+function warm(src){if(!src||warmed.has(src))return;const v=document.createElement('video');v.preload='auto';v.muted=true;v.playsInline=true;v.src=src;try{v.load()}catch(e){}warmed.set(src,v);if(warmed.size>3){const k=warmed.keys().next().value;const old=warmed.get(k);try{old.pause();old.removeAttribute('src');old.load()}catch(e){}warmed.delete(k)}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
 function dayKey(ts=Date.now()){const d=new Date(ts);return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`}
 function marked(t='all'){return ITEMS.filter(x=>st.m[x.id]&&(t==='all'||st.m[x.id].type===t))}
@@ -21,7 +21,7 @@ function grade(type){const x=ITEMS[ix],prev=st.m[x.id],reps=prev&&prev.type===ty
 function animateGrade(type){const card=$('learnCard');card.style.transform=type==='good'?'translateX(22px)':type==='bad'?'translateX(-22px)':'scale(.985)';card.style.opacity='.72';setTimeout(()=>{card.style.transform='';card.style.opacity='1'},180)}
 function pickNextIndex(){const now=Date.now();return ITEMS.map((x,i)=>{const m=st.m[x.id];let score=!m?24:m.next<=now?(m.type==='bad'?100:m.type==='mid'?70:35):(m.type==='bad'?42:m.type==='mid'?24:4);score+=Math.random()*8;return{i,score}}).sort((a,b)=>b.score-a.score)[0].i}
 function previewNext(){ix=pickNextIndex();render();toast('已切换到下一条自适应推荐')}
-function startAdaptive(){ix=pickNextIndex();render();go('learn')}
+function startAdaptive(){if(!trainingStarted){trainingStarted=true;go('learn');return}ix=pickNextIndex();render();go('learn')}
 function category(item){const id=item.scene.id;if(['greeting','intro','smalltalk','appointment','friends','invite','thanks'].includes(id))return'social';if(['convenience','cafe','restaurant','shopping'].includes(id))return'retail';if(['transport','directions','hotel'].includes(id))return'travel';if(id==='health')return'health';return'work'}
 function uniq(a){return [...new Set(a.filter(Boolean))]}
 function pools(item,l){const base=((l==='jp'?VIDEO_JP:VIDEO_EN)[item.scene.id]||[]);return l==='jp'?uniq(EXTRA.jp):uniq([...base,...(EXTRA.en[category(item)]||[]),...EXTRA.en.social.slice(0,1)])}

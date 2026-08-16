@@ -1,7 +1,7 @@
 /* TalkLoop v12 stable, language-separated media orchestration */
 (function(){
 'use strict';
-const VERSION='12.0.0';
+const VERSION='12.0.1';
 const px={
   social:'https://videos.pexels.com/video-files/8522987/8522987-hd_1080_1920_30fps.mp4',
   hotel:'https://videos.pexels.com/video-files/7820465/7820465-hd_1920_1080_25fps.mp4'
@@ -66,8 +66,8 @@ window.pools=pool;
 window.prepareNext=function(item,l){
   const p=livePool(item,l);if(p.length<2)return;
   st.vis=st.vis||{};
-  const visit=st.vis[item.id+'|'+l]||0,seed=hash(item.id+'|'+l+'|next|'+visit);
-  warm(p[(seed+1)%p.length]);
+  const key=item.id+'|'+l,visit=(st.vis[key]||0)+1,seed=hash(key+'|'+visit+'|render|v12');
+  warm(p[seed%p.length]);
 };
 
 function clearVideo(v){
@@ -133,7 +133,7 @@ window.remix=function(item,v,ph,l=lang,reason='auto',shadeId){
       v.style.opacity='1';ph.style.opacity='0';if(shade)shade.style.display='none';
       v.ontimeupdate=()=>{if(v.currentTime>=(v._s||0)+(v._len||4)-.08)advance()};
       v.onended=advance;
-      v.play().catch(()=>{});window.prepareNext(item,l);
+      v.play().catch(()=>{});window.prepareNext(item,l);window.prepareNext(item,l==='en'?'jp':'en');
     };
     const frameReady=()=>{
       if(v._tlToken!==token||revealed)return;
